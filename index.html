@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiat-FR - Vérificateur Anti-Plagiat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .card h3 {
+            color: #555;
+            margin: 20px 0 10px 0;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .feature-list li:before {
+            content: "✅ ";
+            margin-right: 10px;
+        }
+        
+        .info-box {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Plagiat-FR</h1>
+            <p>Vérificateur de plagiat et contenu généré par IA</p>
+            <p style="font-size: 14px; margin-top: 10px;">🇫🇷 Service 100% français pour les étudiants</p>
+        </div>
+        
+        <div class="card">
+            <h2>📢 Site en construction</h2>
+            <p style="margin-bottom: 20px; line-height: 1.6; font-size: 16px;">
+                Plagiat-FR arrive bientôt ! Notre plateforme de vérification anti-plagiat 
+                et détection d'IA sera disponible prochainement.
+            </p>
+            
+            <h3>✨ Fonctionnalités à venir :</h3>
+            <ul class="feature-list">
+                <li>Vérification de plagiat avancée</li>
+                <li>Détection de contenu généré par IA (ChatGPT, Gemini, etc.)</li>
+                <li>Rapport PDF détaillé avec surlignage</li>
+                <li>150 pages gratuites par jour</li>
+                <li>Comparaison avec vos propres documents</li>
+                <li>Interface 100% française et intuitive</li>
+            </ul>
+            
+            <div class="info-box">
+                <p style="font-weight: bold; margin-bottom: 15px;">📧 Soyez informé du lancement :</p>
+                <input type="email" id="email" placeholder="votre@email.fr">
+                <button onclick="showMessage()">📝 M'informer</button>
+                <p style="font-size: 12px; margin-top: 10px; color: #666;">Aucun spam, seulement l'annonce du lancement</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>📊 Pourquoi Plagiat-FR ?</h2>
+            <p style="line-height: 1.6;">
+                Le plagiat académique est un problème sérieux. Avec l'essor de l'IA générative, 
+                il devient essentiel de vérifier l'authenticité des travaux. Plagiat-FR vous offre 
+                des outils professionnels gratuits pour protéger votre travail académique.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 Plagiat-FR - Tous droits réservés</p>
+            <p style="font-size: 12px; margin-top: 10px;">Contact : contact@plagiat-fr.com</p>
+        </div>
+    </div>
+    
+    <script>
+        function showMessage() {
+            const email = document.getElementById('email').value;
+            if (email && email.includes('@')) {
+                alert('Merci ' + email + ' ! Vous serez informé du lancement de Plagiat-FR.');
+                document.getElementById('email').value = '';
+            } else {
+                alert('Veuillez entrer une adresse email valide.');
+            }
+        }
+    </script>
+</body>
+</html>

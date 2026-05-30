@@ -12,6 +12,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            margin: 0;
         }
         .container {
             background: white;
@@ -19,6 +20,7 @@
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             width: 400px;
+            max-width: 90%;
         }
         h1 { color: #667eea; text-align: center; margin-bottom: 30px; }
         input {
@@ -28,6 +30,7 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+            box-sizing: border-box;
         }
         button {
             width: 100%;
@@ -49,6 +52,7 @@
         }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
     </style>
 </head>
 <body>
@@ -59,7 +63,7 @@
         
         <h3>🔐 Connexion / Inscription</h3>
         
-        <input type="email" id="email" placeholder="Email">
+        <input type="email" id="email" placeholder="Email" value="arcelkaleng@gmail.com">
         <input type="password" id="password" placeholder="Mot de passe (6 caractères)">
         <input type="text" id="fullname" placeholder="Nom complet (optionnel)">
         
@@ -83,9 +87,11 @@
         function afficherMessage(texte, type) {
             const msgDiv = document.getElementById('message');
             msgDiv.textContent = texte;
-            msgDiv.className = `message ${type}`;
+            msgDiv.className = 'message ' + type;
             msgDiv.style.display = 'block';
-            setTimeout(() => { msgDiv.style.display = 'none'; }, 5000);
+            setTimeout(function() { 
+                msgDiv.style.display = 'none'; 
+            }, 5000);
         }
         
         // Fonction inscription
@@ -104,19 +110,21 @@
                 return;
             }
             
+            afficherMessage('Inscription en cours...', 'info');
+            
             try {
                 // Création du compte
-                const { data, error } = await supabase.auth.signUp({
+                const resultat = await supabase.auth.signUp({
                     email: email,
                     password: password
                 });
                 
-                if (error) throw error;
+                if (resultat.error) throw resultat.error;
                 
                 // Création du profil
-                if (data.user) {
+                if (resultat.data.user) {
                     await supabase.from('profiles').insert({
-                        id: data.user.id,
+                        id: resultat.data.user.id,
                         email: email,
                         full_name: fullname,
                         is_admin: false,
@@ -124,8 +132,7 @@
                     });
                 }
                 
-                afficherMessage('✅ Inscription réussie ! En attente d\'approbation.', 'success');
-                console.log('Utilisateur créé:', email);
+                afficherMessage('Inscription réussie ! En attente d\'approbation.', 'success');
                 
             } catch (erreur) {
                 afficherMessage('Erreur: ' + erreur.message, 'error');
@@ -143,21 +150,20 @@
                 return;
             }
             
+            afficherMessage('Connexion en cours...', 'info');
+            
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const resultat = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
                 
-                if (error) throw error;
+                if (resultat.error) throw resultat.error;
                 
-                afficherMessage('✅ Connexion réussie !', 'success');
-                console.log('Connecté:', data.user.email);
+                afficherMessage('Connexion réussie !', 'success');
                 
-                // Rediriger vers le site principal
-                setTimeout(() => {
-                    window.location.href = 'https://arckalenga.github.io/plagiat-fr/dashboard.html';
-                }, 1000);
+                // Afficher les infos utilisateur
+                console.log('Connecté:', resultat.data.user.email);
                 
             } catch (erreur) {
                 afficherMessage('Erreur: ' + erreur.message, 'error');
@@ -169,7 +175,7 @@
         document.getElementById('btnInscription').addEventListener('click', inscription);
         document.getElementById('btnConnexion').addEventListener('click', connexion);
         
-        console.log('Page chargée - Supabase prêt');
+        console.log('Page chargée - Prêt');
     </script>
 </body>
 </html>

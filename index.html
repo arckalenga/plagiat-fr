@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Plagiat-FR</title>
+    <style>
+        body { font-family: Arial; background: #667eea; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { background: white; padding: 40px; border-radius: 20px; width: 400px; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        button { background: #667eea; color: white; border: none; cursor: pointer; }
+        .msg { padding: 10px; margin: 10px 0; display: none; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1>🔍 Plagiat-FR</h1>
+    <div id="msg" class="msg"></div>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Mot de passe (6+ caractères)">
+    <input type="text" id="fullname" placeholder="Nom complet">
+    <button id="btnRegister">S'inscrire</button>
+    <button id="btnLogin">Se connecter</button>
+    <p style="font-size:12px">Comptes approuvés par admin</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // Configuration UNIQUE
+    const SUPABASE_URL = 'https://cscdrjnixkebjfgfyzqx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_KPdgb_bqmQjYFsIgil5Flg_uWj8IUDO';
+    
+    // Création UNIQUE du client
+    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    function showMessage(text, type) {
+        const msgDiv = document.getElementById('msg');
+        msgDiv.textContent = text;
+        msgDiv.className = 'msg ' + type;
+        setTimeout(() => { msgDiv.className = 'msg'; }, 4000);
+    }
+    
+    // Inscription
+    window.register = async function() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const fullname = document.getElementById('fullname').value;
+        
+        if (!email || !password) {
+            showMessage('Email et mot de passe requis', 'error');
+            return;
+        }
+        
+        const result = await _supabase.auth.signUp({ email, password });
+        
+        if (result.error) {
+            showMessage('Erreur: ' + result.error.message, 'error');
+        } else {
+            // Créer le profil
+            await _supabase.from('profiles').insert({
+                id: result.data.user.id,
+                email: email,
+                full_name: fullname,
+                is_admin: false,
+                is_approved: false
+            });
+            showMessage('Inscription réussie ! En attente d\'approbation', 'success');
+        }
+    };
+    
+    // Connexion
+    window.login = async function() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        const result = await _supabase.auth.signInWithPassword({ email, password });
+        
+        if (result.error) {
+            showMessage('Erreur: ' + result.error.message, 'error');
+        } else {
+            showMessage('Connexion réussie ! Bienvenue', 'success');
+        }
+    };
+    
+    document.getElementById('btnRegister').onclick = () => window.register();
+    document.getElementById('btnLogin').onclick = () => window.login();
+</script>
+</body>
+</html>

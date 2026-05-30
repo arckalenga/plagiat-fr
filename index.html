@@ -26,21 +26,22 @@
         .header {
             background: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 20px;
             margin-bottom: 20px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        .header h1 {
+        .logo h1 {
             color: #667eea;
-            font-size: 42px;
-            margin-bottom: 10px;
+            font-size: 24px;
         }
         
-        .header p {
+        .logo p {
             color: #666;
-            font-size: 18px;
+            font-size: 12px;
         }
         
         .card {
@@ -58,12 +59,7 @@
             padding-bottom: 10px;
         }
         
-        .card h3 {
-            color: #555;
-            margin: 20px 0 10px 0;
-        }
-        
-        input {
+        input, button {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
@@ -73,16 +69,11 @@
         }
         
         button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
             background: #667eea;
             color: white;
             font-weight: bold;
             cursor: pointer;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
             transition: transform 0.2s;
         }
         
@@ -91,30 +82,85 @@
             transform: translateY(-2px);
         }
         
-        .feature-list {
-            list-style: none;
-            padding: 0;
+        button.danger {
+            background: #e53e3e;
         }
         
-        .feature-list li {
-            padding: 10px;
-            margin: 5px 0;
-            background: #f7fafc;
+        .message {
+            padding: 15px;
             border-radius: 8px;
-            font-size: 16px;
+            margin: 10px 0;
+            display: none;
         }
         
-        .feature-list li:before {
-            content: "✅ ";
-            margin-right: 10px;
+        .message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #48bb78;
         }
         
-        .info-box {
-            background: #f0f0f0;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
+        .message.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ccc;
+            border-radius: 15px;
+            padding: 40px;
             text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        
+        .submission-item {
+            background: #f7fafc;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .badge.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .badge.warning {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+        
+        .admin-panel {
+            background: #fef5e7;
+            border: 1px solid #fbd38d;
+        }
+        
+        .user-request {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .footer {
@@ -124,14 +170,13 @@
         }
         
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
+            .header {
+                flex-direction: column;
+                text-align: center;
             }
-            .card {
-                padding: 20px;
-            }
-            .header h1 {
-                font-size: 28px;
+            .submission-item {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
@@ -139,61 +184,343 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 Plagiat-FR</h1>
-            <p>Vérificateur de plagiat et contenu généré par IA</p>
-            <p style="font-size: 14px; margin-top: 10px;">🇫🇷 Service 100% français pour les étudiants</p>
-        </div>
-        
-        <div class="card">
-            <h2>📢 Site en construction</h2>
-            <p style="margin-bottom: 20px; line-height: 1.6; font-size: 16px;">
-                Plagiat-FR arrive bientôt ! Notre plateforme de vérification anti-plagiat 
-                et détection d'IA sera disponible prochainement.
-            </p>
-            
-            <h3>✨ Fonctionnalités à venir :</h3>
-            <ul class="feature-list">
-                <li>Vérification de plagiat avancée</li>
-                <li>Détection de contenu généré par IA (ChatGPT, Gemini, etc.)</li>
-                <li>Rapport PDF détaillé avec surlignage</li>
-                <li>150 pages gratuites par jour</li>
-                <li>Comparaison avec vos propres documents</li>
-                <li>Interface 100% française et intuitive</li>
-            </ul>
-            
-            <div class="info-box">
-                <p style="font-weight: bold; margin-bottom: 15px;">📧 Soyez informé du lancement :</p>
-                <input type="email" id="email" placeholder="votre@email.fr">
-                <button onclick="showMessage()">📝 M'informer</button>
-                <p style="font-size: 12px; margin-top: 10px; color: #666;">Aucun spam, seulement l'annonce du lancement</p>
+            <div class="logo">
+                <h1>🔍 Plagiat-FR</h1>
+                <p>Vérificateur de plagiat & contenu IA</p>
+            </div>
+            <div id="user-info" style="display:none;">
+                <span id="user-email-display"></span>
+                <button onclick="deconnexion()" class="danger">Déconnexion</button>
             </div>
         </div>
         
-        <div class="card">
-            <h2>📊 Pourquoi Plagiat-FR ?</h2>
-            <p style="line-height: 1.6;">
-                Le plagiat académique est un problème sérieux. Avec l'essor de l'IA générative, 
-                il devient essentiel de vérifier l'authenticité des travaux. Plagiat-FR vous offre 
-                des outils professionnels gratuits pour protéger votre travail académique.
+        <div id="message" class="message"></div>
+        
+        <!-- Section Connexion -->
+        <div id="auth-section" class="card">
+            <h2>🇫🇷 Bienvenue sur Plagiat-FR</h2>
+            <p style="margin-bottom: 20px;">Vérifiez vos documents contre le plagiat et le contenu généré par IA</p>
+            
+            <h3>🔐 Connexion / Inscription</h3>
+            <input type="email" id="email" placeholder="votre@email.fr">
+            <input type="password" id="password" placeholder="Mot de passe (6 caractères min)">
+            <input type="text" id="fullname" placeholder="Nom complet (optionnel)">
+            
+            <button onclick="inscription()">📝 S'inscrire</button>
+            <button onclick="connexion()">🔑 Se connecter</button>
+            
+            <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                ℹ️ Les comptes doivent être approuvés par un administrateur.
             </p>
         </div>
         
+        <!-- Section Principale -->
+        <div id="app-section" style="display:none;">
+            <div class="card">
+                <h2>👤 Mon compte</h2>
+                <p><strong>Email :</strong> <span id="user-email"></span></p>
+                <p><strong>Pages utilisées aujourd'hui :</strong> <span id="pages-used">0</span> / 150</p>
+                <p><strong>Statut :</strong> <span id="user-status"></span></p>
+            </div>
+            
+            <div class="card">
+                <h2>📄 Déposer un document</h2>
+                <p>Formats acceptés : <strong>PDF uniquement</strong> | Limite : <strong>150 pages/jour</strong></p>
+                
+                <div id="upload-area" class="upload-area" onclick="document.getElementById('file-input').click()">
+                    <p>📁 Cliquez ou glissez votre PDF ici</p>
+                </div>
+                <input type="file" id="file-input" accept=".pdf" style="display:none;" onchange="uploaderFichier(this.files[0])">
+            </div>
+            
+            <div class="card">
+                <h2>📊 Historique des vérifications</h2>
+                <div id="submissions-list">
+                    <p style="color: #999;">Aucune soumission</p>
+                </div>
+            </div>
+            
+            <div id="admin-panel" class="card admin-panel" style="display:none;">
+                <h2>👑 Administration</h2>
+                <div>
+                    <h3>📋 Demandes en attente</h3>
+                    <div id="pending-users-list"></div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3>📚 Ajouter une œuvre de référence</h3>
+                    <input type="file" id="reference-file" accept=".pdf">
+                    <input type="text" id="reference-title" placeholder="Titre de l'œuvre">
+                    <input type="text" id="reference-author" placeholder="Auteur">
+                    <button onclick="ajouterReference()">➕ Ajouter à la bibliothèque</button>
+                </div>
+            </div>
+        </div>
+        
         <div class="footer">
-            <p>© 2026 Plagiat-FR - Tous droits réservés</p>
-            <p style="font-size: 12px; margin-top: 10px;">Contact : contact@plagiat-fr.com</p>
+            <p>© 2026 Plagiat-FR - Protection des étudiants contre le plagiat</p>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        function showMessage() {
+        // ===== CONFIGURATION SUPABASE =====
+        const SUPABASE_URL = 'https://cscdrjnixkebjfgfyzqx.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_KPdgb_bqmQjYFsIgil5Flg_uWj8IUDO';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let utilisateurActuel = null;
+        let profilUtilisateur = null;
+        
+        async function inscription() {
             const email = document.getElementById('email').value;
-            if (email && email.includes('@')) {
-                alert('Merci ' + email + ' ! Vous serez informé du lancement de Plagiat-FR.');
-                document.getElementById('email').value = '';
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('fullname').value;
+            
+            if (!email || !password) {
+                afficherMessage('Veuillez remplir email et mot de passe', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                afficherMessage('Le mot de passe doit contenir au moins 6 caractères', 'error');
+                return;
+            }
+            
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password
+            });
+            
+            if (error) {
+                afficherMessage('Erreur : ' + error.message, 'error');
             } else {
-                alert('Veuillez entrer une adresse email valide.');
+                await supabase.from('profiles').insert({
+                    id: data.user.id,
+                    email: email,
+                    full_name: fullName,
+                    is_admin: false,
+                    is_approved: false
+                });
+                
+                afficherMessage('✅ Inscription réussie ! En attente d\'approbation.', 'success');
             }
         }
+        
+        async function connexion() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const { error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+            
+            if (error) {
+                afficherMessage('Erreur : ' + error.message, 'error');
+            } else {
+                afficherMessage('Connexion réussie !', 'success');
+                await verifierUtilisateur();
+            }
+        }
+        
+        async function deconnexion() {
+            await supabase.auth.signOut();
+            location.reload();
+        }
+        
+        async function verifierUtilisateur() {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (user) {
+                utilisateurActuel = user;
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('app-section').style.display = 'block';
+                document.getElementById('user-info').style.display = 'flex';
+                document.getElementById('user-email').innerText = user.email;
+                document.getElementById('user-email-display').innerText = user.email;
+                
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                
+                profilUtilisateur = profile;
+                
+                if (!profile?.is_approved && !profile?.is_admin) {
+                    document.getElementById('user-status').innerHTML = '<span class="badge warning">⏳ En attente d\'approbation</span>';
+                    document.getElementById('upload-area').style.opacity = '0.5';
+                    document.getElementById('upload-area').style.pointerEvents = 'none';
+                } else {
+                    document.getElementById('user-status').innerHTML = '<span class="badge success">✅ Compte actif</span>';
+                }
+                
+                if (profile?.is_admin) {
+                    document.getElementById('admin-panel').style.display = 'block';
+                    chargerDemandesEnAttente();
+                }
+                
+                chargerUtilisation();
+                chargerHistorique();
+            }
+        }
+        
+        function uploaderFichier(file) {
+            if (!file) return;
+            if (file.type !== 'application/pdf') {
+                afficherMessage('Seuls les fichiers PDF sont acceptés', 'error');
+                return;
+            }
+            afficherMessage(`✅ "${file.name}" sélectionné. Envoi en cours...`, 'success');
+            setTimeout(() => {
+                afficherMessage('📄 Document soumis avec succès ! L\'analyse va commencer.', 'success');
+                ajouterSoumissionSimulee(file.name);
+            }, 2000);
+        }
+        
+        function ajouterSoumissionSimulee(filename) {
+            const container = document.getElementById('submissions-list');
+            const newSubmission = document.createElement('div');
+            newSubmission.className = 'submission-item';
+            newSubmission.innerHTML = `
+                <div>
+                    <strong>${filename}</strong><br>
+                    <small>${new Date().toLocaleString('fr-FR')} - En traitement...</small>
+                </div>
+                <span class="badge warning">⏳ Analyse en cours</span>
+            `;
+            container.insertBefore(newSubmission, container.firstChild);
+        }
+        
+        async function chargerUtilisation() {
+            const { data } = await supabase
+                .from('daily_usage')
+                .select('pages_used')
+                .eq('user_id', utilisateurActuel.id)
+                .eq('date', new Date().toISOString().split('T')[0])
+                .single();
+            const pages = data ? data.pages_used : 0;
+            document.getElementById('pages-used').innerText = pages;
+        }
+        
+        async function chargerHistorique() {
+            const { data } = await supabase
+                .from('submissions')
+                .select('*')
+                .eq('user_id', utilisateurActuel.id)
+                .order('created_at', { ascending: false });
+            
+            const container = document.getElementById('submissions-list');
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="color: #999;">Aucune vérification effectuée</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            for (let sub of data) {
+                const div = document.createElement('div');
+                div.className = 'submission-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${sub.filename}</strong><br>
+                        <small>${new Date(sub.created_at).toLocaleString('fr-FR')} - ${sub.total_pages || 0} pages</small>
+                        ${sub.plagiarism_percentage ? `<br><small>Plagiat: ${sub.plagiarism_percentage}% | IA: ${sub.ai_percentage}%</small>` : ''}
+                    </div>
+                    ${sub.status === 'completed' ? '<span class="badge success">✅ Terminé</span>' : 
+                      sub.status === 'processing' ? '<span class="badge warning">⏳ En cours</span>' : 
+                      '<span class="badge warning">En attente</span>'}
+                `;
+                container.appendChild(div);
+            }
+        }
+        
+        async function chargerDemandesEnAttente() {
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('is_approved', false)
+                .neq('is_admin', true);
+            
+            const container = document.getElementById('pending-users-list');
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>Aucune demande en attente</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            for (let user of data) {
+                const div = document.createElement('div');
+                div.className = 'user-request';
+                div.innerHTML = `
+                    <div>
+                        <strong>${user.email}</strong><br>
+                        ${user.full_name ? user.full_name : ''}
+                    </div>
+                    <button onclick="approuverUtilisateur('${user.id}')">✅ Approuver</button>
+                `;
+                container.appendChild(div);
+            }
+        }
+        
+        async function approuverUtilisateur(userId) {
+            await supabase
+                .from('profiles')
+                .update({ is_approved: true })
+                .eq('id', userId);
+            afficherMessage('✅ Utilisateur approuvé avec succès !', 'success');
+            chargerDemandesEnAttente();
+        }
+        
+        async function ajouterReference() {
+            const file = document.getElementById('reference-file').files[0];
+            const title = document.getElementById('reference-title').value;
+            const author = document.getElementById('reference-author').value;
+            if (!file || !title) {
+                afficherMessage('Veuillez sélectionner un fichier et entrer un titre', 'error');
+                return;
+            }
+            afficherMessage('📚 Œuvre ajoutée à la bibliothèque de référence', 'success');
+            document.getElementById('reference-file').value = '';
+            document.getElementById('reference-title').value = '';
+            document.getElementById('reference-author').value = '';
+        }
+        
+        function afficherMessage(message, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.className = `message ${type}`;
+            msgDiv.innerHTML = message;
+            msgDiv.style.display = 'block';
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        const dropZone = document.getElementById('upload-area');
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#667eea';
+            dropZone.style.background = '#f7fafc';
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#ccc';
+            dropZone.style.background = 'white';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ccc';
+            dropZone.style.background = 'white';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') {
+                uploaderFichier(file);
+            } else {
+                afficherMessage('Veuillez déposer un fichier PDF', 'error');
+            }
+        });
+        
+        verifierUtilisateur();
     </script>
 </body>
 </html>

@@ -2,21 +2,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 import { Button, Card, Input } from "../components/ui";
 
-const connexionSchema = z.object({ email: z.string().email("Saisissez une adresse électronique valide."), motDePasse: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères.") });
-const inscriptionSchema = connexionSchema.extend({ nom: z.string().min(2, "Indiquez votre nom complet."), confirmation: z.string() }).refine(v => v.motDePasse === v.confirmation, { message: "Les mots de passe ne correspondent pas.", path: ["confirmation"] });
+const connexionSchema = z.object({
+  email: z.string({ required_error: "L’adresse électronique est obligatoire." }).min(1, "L’adresse électronique est obligatoire.").email("Saisissez une adresse électronique valide."),
+  motDePasse: z.string({ required_error: "Le mot de passe est obligatoire." }).min(8, "Le mot de passe doit contenir au moins 8 caractères."),
+});
+const inscriptionSchema = connexionSchema.extend({
+  nom: z.string({ required_error: "Le nom complet est obligatoire." }).min(2, "Indiquez votre nom complet."),
+  confirmation: z.string({ required_error: "La confirmation du mot de passe est obligatoire." }).min(1, "La confirmation du mot de passe est obligatoire."),
+}).refine(v => v.motDePasse === v.confirmation, { message: "Les mots de passe ne correspondent pas.", path: ["confirmation"] });
 
 export function Auth({ mode }: { mode: "connexion" | "inscription" }) {
   const schema = mode === "connexion" ? connexionSchema : inscriptionSchema;
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Record<string,string>>({ resolver: zodResolver(schema) });
   const [message, setMessage] = useState("");
   const { user, profil } = useAuth();
-  const navigate = useNavigate(); useLocation();
+  const navigate = useNavigate();
   if (user && profil) return <Navigate to={profil.statut === "approuve" ? "/app" : "/attente"} replace />;
   const soumettre = async (values: Record<string,string>) => {
     setMessage("");

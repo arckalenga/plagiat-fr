@@ -1,0 +1,5 @@
+project_id = "plagiat-fr"
+[functions.analyser-document]
+verify_jwt = true
+[functions.generer-rapport]
+verify_jwt = true

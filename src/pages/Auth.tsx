@@ -16,13 +16,13 @@ export function Auth({ mode }: { mode: "connexion" | "inscription" }) {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Record<string,string>>({ resolver: zodResolver(schema) });
   const [message, setMessage] = useState("");
   const { user, profil } = useAuth();
-  const navigate = useNavigate(); const location = useLocation();
+  const navigate = useNavigate(); useLocation();
   if (user && profil) return <Navigate to={profil.statut === "approuve" ? "/app" : "/attente"} replace />;
   const soumettre = async (values: Record<string,string>) => {
     setMessage("");
     if (!supabaseConfigured) { setMessage("La configuration Supabase est absente. Consultez le fichier .env.example."); return; }
     if (mode === "inscription") {
-      const { error } = await supabase.auth.signUp({ email: values.email, password: values.motDePasse, options: { data: { nom_complet: values.nom }, emailRedirectTo: `${location.origin}/connexion` } });
+      const { error } = await supabase.auth.signUp({ email: values.email, password: values.motDePasse, options: { data: { nom_complet: values.nom }, emailRedirectTo: `${window.location.origin}/connexion` } });
       if (error) return setMessage(traduireErreur(error.message));
       setMessage("Votre demande a bien été enregistrée. Vérifiez votre messagerie, puis attendez l’approbation d’un administrateur.");
     } else {

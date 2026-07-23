@@ -1,0 +1,21 @@
+import { AlertTriangle, ArrowUpRight, FilePlus2, FileText, SearchCheck, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Badge, Button, Card } from "../components/ui";
+import { useAuth } from "../contexts/AuthContext";
+import { formatDate } from "../lib/utils";
+import { supabase, supabaseConfigured } from "../lib/supabase";
+
+type Analyse = { id: string; nom_fichier: string; cree_le: string; statut: string; score_originalite: number | null; score_ia: number | null };
+export function TableauDeBord() {
+  const { profil } = useAuth(); const [analyses, setAnalyses] = useState<Analyse[]>([]);
+  useEffect(() => { if (supabaseConfigured) void supabase.from("analyses").select("id,nom_fichier,cree_le,statut,score_originalite,score_ia").order("cree_le",{ascending:false}).limit(6).then(({data}) => setAnalyses((data as Analyse[]) || [])); }, []);
+  const terminees = analyses.filter(a => a.statut === "terminee");
+  const moyenne = terminees.length ? Math.round(terminees.reduce((s,a)=>s+(a.score_originalite||0),0)/terminees.length) : 0;
+  return <div className="p-5 lg:p-10"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="text-sm text-black/45">Bonjour, {profil?.nom_complet?.split(" ")[0] || "bienvenue"}</p><h1 className="mt-1 font-display text-4xl text-forest-900">Votre espace d’analyse</h1></div><Link to="/app/nouvelle-analyse"><Button><FilePlus2 size={18}/>Nouvelle analyse</Button></Link></div>
+    <div className="mt-8 grid gap-4 md:grid-cols-3"><Stat icon={FileText} label="Documents analysés" valeur={String(analyses.length)} detail="dans votre historique"/><Stat icon={SearchCheck} label="Originalité moyenne" valeur={`${moyenne} %`} detail="sur les analyses terminées"/><Stat icon={Sparkles} label="Alertes IA" valeur={String(analyses.filter(a=>(a.score_ia||0)>65).length)} detail="à examiner avec prudence"/></div>
+    <Card className="mt-7 overflow-hidden shadow-none"><div className="flex items-center justify-between border-b border-black/[.07] p-5"><div><h2 className="font-semibold">Analyses récentes</h2><p className="mt-1 text-sm text-black/45">Vos derniers documents et leur progression</p></div></div>{analyses.length ? <div className="divide-y divide-black/[.06]">{analyses.map(a=><Link to={`/app/rapport/${a.id}`} key={a.id} className="grid items-center gap-3 p-5 transition hover:bg-sand/50 md:grid-cols-[1fr_140px_110px_110px_24px]"><div className="flex min-w-0 items-center gap-3"><div className="rounded-xl bg-forest-50 p-2 text-forest-700"><FileText size={20}/></div><div className="min-w-0"><p className="truncate font-medium">{a.nom_fichier}</p><p className="text-xs text-black/40">{formatDate(a.cree_le)}</p></div></div><Badge tone={a.statut==="terminee"?"green":a.statut==="erreur"?"red":"amber"}>{a.statut==="terminee"?"Terminée":a.statut==="erreur"?"Échec":"En cours"}</Badge><span className="text-sm"><b>{a.score_originalite ?? "—"}</b>{a.score_originalite!==null?" %":""}</span><span className="text-sm"><b>{a.score_ia ?? "—"}</b>{a.score_ia!==null?" % IA":""}</span><ArrowUpRight size={17} className="text-black/30"/></Link>)}</div>:<div className="grid place-items-center p-14 text-center"><FileText className="mb-4 text-black/20" size={38}/><h3 className="font-semibold">Aucune analyse pour le moment</h3><p className="mt-2 max-w-sm text-sm text-black/45">Importez votre premier document pour obtenir un rapport d’originalité.</p></div>}</Card>
+    <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-black/45"><AlertTriangle size={15} className="mt-0.5 shrink-0"/>Les indicateurs de rédaction assistée par IA sont probabilistes et doivent toujours faire l’objet d’une interprétation humaine.</p>
+  </div>;
+}
+function Stat({icon:Icon,label,valeur,detail}:{icon:typeof FileText;label:string;valeur:string;detail:string}){return <Card className="p-5 shadow-none"><div className="flex items-start justify-between"><div><p className="text-sm text-black/45">{label}</p><p className="mt-3 text-3xl font-bold text-forest-900">{valeur}</p><p className="mt-1 text-xs text-black/40">{detail}</p></div><div className="rounded-xl bg-forest-50 p-3 text-forest-700"><Icon size={22}/></div></div></Card>}

@@ -5,6 +5,9 @@ import { Layout } from "./components/Layout";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Accueil } from "./pages/Accueil";
 import { Auth } from "./pages/Auth";
+import { NouvelleAnalyse } from "./pages/NouvelleAnalyse";
+import { Rapport } from "./pages/Rapport";
+import { TableauDeBord } from "./pages/TableauDeBord";
 import "./styles.css";
 
 function Placeholder({ titre }: { titre: string }) { return <div className="p-6 lg:p-10"><h1 className="font-display text-4xl text-forest-900">{titre}</h1><p className="mt-3 text-black/50">Cette section sera disponible dans la prochaine étape.</p></div>; }
@@ -16,5 +19,5 @@ function Protection({ children, admin = false }: { children: React.ReactNode; ad
   if (admin && profil.role !== "administrateur") return <Navigate to="/app" replace />;
   return children;
 }
-function App() { return <Routes><Route path="/" element={<Accueil/>}/><Route path="/connexion" element={<Auth mode="connexion"/>}/><Route path="/inscription" element={<Auth mode="inscription"/>}/><Route path="/attente" element={<Placeholder titre="Compte en attente d’approbation"/>}/><Route element={<Protection><Layout/></Protection>}><Route path="/app" element={<Placeholder titre="Tableau de bord"/>}/><Route path="/app/nouvelle-analyse" element={<Placeholder titre="Nouvelle analyse"/>}/></Route><Route element={<Protection admin><Layout/></Protection>}><Route path="/admin" element={<Placeholder titre="Administration"/>}/><Route path="/admin/journal" element={<Placeholder titre="Journal d’audit"/>}/></Route><Route path="*" element={<Navigate to="/" replace/>}/></Routes>; }
+function App() { return <Routes><Route path="/" element={<Accueil/>}/><Route path="/connexion" element={<Auth mode="connexion"/>}/><Route path="/inscription" element={<Auth mode="inscription"/>}/><Route path="/attente" element={<Placeholder titre="Compte en attente d’approbation"/>}/><Route element={<Protection><Layout/></Protection>}><Route path="/app" element={<TableauDeBord/>}/><Route path="/app/nouvelle-analyse" element={<NouvelleAnalyse/>}/><Route path="/app/rapport/:id" element={<Rapport/>}/></Route><Route element={<Protection admin><Layout/></Protection>}><Route path="/admin" element={<Placeholder titre="Administration"/>}/><Route path="/admin/journal" element={<Placeholder titre="Journal d’audit"/>}/></Route><Route path="*" element={<Navigate to="/" replace/>}/></Routes>; }
 ReactDOM.createRoot(document.getElementById("root")!).render(<React.StrictMode><BrowserRouter><AuthProvider><App/></AuthProvider></BrowserRouter></React.StrictMode>);

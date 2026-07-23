@@ -1,4 +1,4 @@
-import { Ban, CheckCircle2, Clock3, RefreshCw, Search, ShieldCheck, UserCheck, Users } from "lucide-react";
+import { Ban, CheckCircle2, Clock3, RefreshCw, Search, UserCheck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge, Button, Card, Input } from "../components/ui";
 import type { Profil } from "../contexts/AuthContext";

@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, Bot, Download, ExternalLink, FileText, Quote, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Bot, Download, ExternalLink, Quote, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card } from "../components/ui";

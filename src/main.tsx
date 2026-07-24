@@ -10,6 +10,7 @@ import { Rapport } from "./pages/Rapport";
 import { TableauDeBord } from "./pages/TableauDeBord";
 import { Admin } from "./pages/Admin";
 import { JournalAudit } from "./pages/JournalAudit";
+import { Bibliotheque } from "./pages/Bibliotheque";
 import "./styles.css";
 
 function Attente() {
@@ -28,5 +29,5 @@ function Protection({ children, admin = false }: { children: React.ReactNode; ad
   if (admin && profil.role !== "administrateur") return <Navigate to="/app" replace />;
   return children;
 }
-function App() { return <Routes><Route path="/" element={<Accueil/>}/><Route path="/connexion" element={<Auth mode="connexion"/>}/><Route path="/inscription" element={<Auth mode="inscription"/>}/><Route path="/attente" element={<Attente/>}/><Route element={<Protection><Layout/></Protection>}><Route path="/app" element={<TableauDeBord/>}/><Route path="/app/nouvelle-analyse" element={<NouvelleAnalyse/>}/><Route path="/app/rapport/:id" element={<Rapport/>}/></Route><Route element={<Protection admin><Layout/></Protection>}><Route path="/admin" element={<Admin/>}/><Route path="/admin/journal" element={<JournalAudit/>}/></Route><Route path="*" element={<Navigate to="/" replace/>}/></Routes>; }
+function App() { return <Routes><Route path="/" element={<Accueil/>}/><Route path="/connexion" element={<Auth mode="connexion"/>}/><Route path="/inscription" element={<Auth mode="inscription"/>}/><Route path="/attente" element={<Attente/>}/><Route element={<Protection><Layout/></Protection>}><Route path="/app" element={<TableauDeBord/>}/><Route path="/app/nouvelle-analyse" element={<NouvelleAnalyse/>}/><Route path="/app/rapport/:id" element={<Rapport/>}/></Route><Route element={<Protection admin><Layout/></Protection>}><Route path="/admin" element={<Admin/>}/><Route path="/admin/bibliotheque" element={<Bibliotheque/>}/><Route path="/admin/journal" element={<JournalAudit/>}/></Route><Route path="*" element={<Navigate to="/" replace/>}/></Routes>; }
 ReactDOM.createRoot(document.getElementById("root")!).render(<React.StrictMode><BrowserRouter><AuthProvider><App/></AuthProvider></BrowserRouter></React.StrictMode>);

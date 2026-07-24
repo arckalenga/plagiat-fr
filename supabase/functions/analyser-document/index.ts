@@ -8,71 +8,44 @@ const cors = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
-
   let analyseId: string | null = null;
-  const admin = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   try {
     const token = req.headers.get("Authorization");
     if (!token) throw new Error("Authentification requise");
-
-    const client = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: token } } },
-    );
+    const client = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: token } },
+    });
     const { data: { user } } = await client.auth.getUser();
     if (!user) throw new Error("Session invalide");
 
     const body = await req.json();
     analyseId = body.analyse_id;
-    if (!analyseId) throw new Error("Identifiant d’analyse manquant");
+    const passages = body.passages;
+    if (!analyseId || !Array.isArray(passages) || passages.length === 0) {
+      throw new Error("Le document ne contient aucun passage exploitable");
+    }
 
-    const { data: analyse } = await client.from("analyses").select("*").eq("id", analyseId).single();
+    const { data: analyse } = await client.from("analyses").select("id").eq("id", analyseId).single();
     if (!analyse) throw new Error("Analyse introuvable");
-
     await admin.from("analyses").update({ statut: "traitement", erreur: null }).eq("id", analyseId);
 
-    const endpoint = Deno.env.get("ANALYSIS_API_URL");
-    const apiKey = Deno.env.get("ANALYSIS_API_KEY");
-    if (!endpoint || !apiKey) throw new Error("Le service d’analyse n’est pas configuré");
-
-    const { data: signed } = await admin.storage.from("documents").createSignedUrl(analyse.chemin_stockage, 300);
-    if (!signed?.signedUrl) throw new Error("Le document ne peut pas être lu");
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        document_url: signed.signedUrl,
-        language: "fr",
-        checks: ["plagiarism", "ai-writing"],
-      }),
+    const { error: erreurIndexation } = await client.rpc("indexer_analyse_interne", {
+      p_analyse_id: analyseId,
+      p_passages: passages,
     });
-    if (!response.ok) throw new Error("Le service d’analyse a refusé la demande");
+    if (erreurIndexation) throw new Error(erreurIndexation.message);
 
-    const result = await response.json();
-    await admin.from("analyses").update({
-      statut: "terminee",
-      score_originalite: result.originality_score,
-      score_ia: result.ai_score,
-      resume_ia: result.ai_summary,
-      sources: result.sources || [],
-      terminee_le: new Date().toISOString(),
-    }).eq("id", analyseId);
+    const { data: resultat, error: erreurComparaison } = await client.rpc("comparer_analyse_interne", {
+      p_analyse_id: analyseId,
+    });
+    if (erreurComparaison) throw new Error(erreurComparaison.message);
 
-    return Response.json({ succes: true }, { headers: cors });
+    return Response.json({ succes: true, resultat }, { headers: cors });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erreur interne";
-    if (analyseId) {
-      await admin.from("analyses").update({
-        statut: "erreur",
-        erreur: message,
-      }).eq("id", analyseId);
-    }
+    if (analyseId) await admin.from("analyses").update({ statut: "erreur", erreur: message }).eq("id", analyseId);
     return Response.json({ erreur: message }, { status: 400, headers: cors });
   }
 });

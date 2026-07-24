@@ -1,4 +1,4 @@
-import { FileCheck2, LayoutDashboard, LogOut, Menu, ShieldCheck, Users, X } from "lucide-react";
+import { BookOpen, FileCheck2, LayoutDashboard, LogOut, Menu, ShieldCheck, Users, X } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -11,7 +11,7 @@ export function Layout() {
   const liens = [
     { to: "/app", label: "Tableau de bord", icon: LayoutDashboard, end: true },
     { to: "/app/nouvelle-analyse", label: "Nouvelle analyse", icon: FileCheck2 },
-    ...(profil?.role === "administrateur" ? [{ to: "/admin", label: "Administration", icon: Users }, { to: "/admin/journal", label: "Journal d’audit", icon: ShieldCheck }] : [])
+    ...(profil?.role === "administrateur" ? [{ to: "/admin", label: "Administration", icon: Users }, { to: "/admin/bibliotheque", label: "Bibliothèque", icon: BookOpen }, { to: "/admin/journal", label: "Journal d’audit", icon: ShieldCheck }] : [])
   ];
   return <div className="min-h-screen bg-[#f8f7f2] text-ink">
     <aside className={cn("fixed inset-y-0 left-0 z-40 w-72 bg-forest-900 p-5 text-white transition-transform lg:translate-x-0", ouvert ? "translate-x-0" : "-translate-x-full")}>

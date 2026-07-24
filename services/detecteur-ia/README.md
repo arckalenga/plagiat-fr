@@ -1,5 +1,5 @@
 ---
-title: Plagiat-FR - Détecteur IA expérimental
+title: Plagiat-FR - Détecteur IA
 emoji: 🧪
 colorFrom: green
 colorTo: yellow
@@ -10,12 +10,12 @@ pinned: false
 license: apache-2.0
 ---
 
-# Détecteur IA expérimental de Plagiat-FR
+# Détecteur IA de Plagiat-FR
 
 Service Python protégé d'analyse probabiliste de textes francophones.
 
 Le modèle utilisé est `danibor/oculus-v2.0-multilingual` (Apache-2.0). Le
-résultat ne constitue jamais une preuve d'utilisation d'une IA. Le service
+résultat est une estimation probabiliste à interpréter humainement. Le service
 peut s'abstenir lorsque le texte est trop court ou que le score est trop
 proche de 50 %.
 

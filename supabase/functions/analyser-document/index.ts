@@ -35,7 +35,7 @@ async function detecterRedactionIA(passages: Passage[]) {
     return {
       score: null,
       resume:
-        "Le détecteur IA expérimental n’est pas encore configuré sur ce projet.",
+        "Le détecteur de rédaction IA n’est pas encore configuré sur ce projet.",
     };
   }
 
@@ -44,7 +44,7 @@ async function detecterRedactionIA(passages: Passage[]) {
     return {
       score: null,
       resume:
-        "Texte trop court pour produire un indicateur IA expérimental.",
+        "Texte trop court pour produire un indicateur de rédaction IA.",
     };
   }
 
@@ -95,7 +95,7 @@ async function detecterRedactionIA(passages: Passage[]) {
         resume:
           typeof resultat.raison === "string"
             ? resultat.raison
-            : "Le détecteur IA expérimental s’est abstenu.",
+            : "Le détecteur de rédaction IA n’a pas pu établir un indicateur fiable.",
       };
     }
 
@@ -105,13 +105,13 @@ async function detecterRedactionIA(passages: Passage[]) {
         : "";
     return {
       score,
-      resume: `Indicateur expérimental : probabilité de rédaction assistée par IA de ${score} %.${confiance} Ce résultat ne constitue pas une preuve.`,
+      resume: `Probabilité estimée de rédaction assistée par IA : ${score} %.${confiance} Ce résultat doit être interprété humainement.`,
     };
   } catch {
     return {
       score: null,
       resume:
-        "Le détecteur IA expérimental est momentanément indisponible. L’analyse de plagiat reste valide.",
+        "Le détecteur de rédaction IA est momentanément indisponible. L’analyse de plagiat reste valide.",
     };
   }
 }
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
         : {
             score: null,
             resume:
-              "La détection expérimentale de rédaction IA n’a pas été demandée.",
+              "La détection de rédaction IA n’a pas été demandée.",
           };
     await admin
       .from("analyses")

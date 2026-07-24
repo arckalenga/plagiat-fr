@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
       color: vert,
     });
 
-    page.drawText("DETECTION DE REDACTION IA - EXPERIMENTAL", {
+    page.drawText("INDICATEUR DE REDACTION IA", {
       x: 42,
       y: 490,
       size: 9,
@@ -292,7 +292,7 @@ Deno.serve(async (req) => {
       { x: 42, y: 105, size: 9, font, color: gris },
     );
     page.drawText(
-      "Le score IA est probabiliste, experimental et ne constitue jamais une preuve.",
+      "Le score IA est une estimation probabiliste a interpreter avec le document.",
       { x: 42, y: 88, size: 8, font, color: gris },
     );
     page.drawText(`Identifiant : ${analyse.id}`, {

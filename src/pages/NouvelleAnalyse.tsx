@@ -181,12 +181,12 @@ export function NouvelleAnalyse() {
           <span>
             <span className="flex items-center gap-2 text-sm font-semibold">
               <Bot size={17} />
-              Activer la détection expérimentale de rédaction IA
+              Activer la détection de rédaction IA
             </span>
             <span className="mt-1 block text-xs leading-5 text-black/50">
               Avec votre accord, des extraits du document seront traités par
               notre service de modèle hébergé sur Hugging Face. Le résultat est
-              probabiliste et ne constitue jamais une preuve.
+              une estimation probabiliste qui doit être interprétée humainement.
             </span>
           </span>
         </label>

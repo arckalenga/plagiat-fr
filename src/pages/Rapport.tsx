@@ -257,7 +257,7 @@ export function Rapport() {
               <Bot size={20} />
               Détection de rédaction IA
             </div>
-            <Badge>Expérimental</Badge>
+            <Badge>Indicateur IA</Badge>
           </div>
           <p
             className={`mt-5 text-3xl font-bold ${
@@ -283,8 +283,8 @@ export function Rapport() {
               "Aucun résultat de détection de rédaction IA n’est disponible."}
           </p>
           <p className="mt-2 text-xs font-medium leading-5 text-amber-800">
-            Cette estimation probabiliste ne constitue jamais une preuve et
-            doit faire l’objet d’une interprétation humaine.
+            Cette estimation probabiliste doit faire l’objet d’une
+            interprétation humaine et être confrontée au contenu du document.
           </p>
         </Card>
       </div>

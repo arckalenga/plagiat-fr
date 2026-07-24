@@ -29,7 +29,7 @@ with gr.Blocks(title="Détecteur IA Plagiat-FR") as demo:
         # Détecteur IA Plagiat-FR
 
         Ce service est réservé à l’application Plagiat-FR. Son résultat est
-        probabiliste, expérimental et ne constitue jamais une preuve.
+        probabiliste et doit être interprété humainement.
         """
     )
     texte = gr.Textbox(visible=False)
@@ -41,7 +41,7 @@ with gr.Blocks(title="Détecteur IA Plagiat-FR") as demo:
         inputs=[texte, cle_api],
         outputs=resultat,
         api_name="detecter",
-        api_description="Analyse expérimentale réservée à Plagiat-FR.",
+        api_description="Analyse de rédaction IA réservée à Plagiat-FR.",
     )
 
 

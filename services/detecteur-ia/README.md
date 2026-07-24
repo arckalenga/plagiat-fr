@@ -3,15 +3,16 @@ title: Plagiat-FR - Détecteur IA expérimental
 emoji: 🧪
 colorFrom: green
 colorTo: yellow
-sdk: docker
-app_port: 7860
+sdk: gradio
+sdk_version: 5.49.1
+app_file: app.py
 pinned: false
 license: apache-2.0
 ---
 
 # Détecteur IA expérimental de Plagiat-FR
 
-Service Python privé d'analyse probabiliste de textes francophones.
+Service Python protégé d'analyse probabiliste de textes francophones.
 
 Le modèle utilisé est `danibor/oculus-v2.0-multilingual` (Apache-2.0). Le
 résultat ne constitue jamais une preuve d'utilisation d'une IA. Le service
@@ -26,27 +27,14 @@ Créer un secret Hugging Face Space :
 PLAGIAT_FR_API_KEY=<clé aléatoire longue>
 ```
 
-Le point `/health` est public. Le point `/detecter` exige cette clé dans
-l'en-tête `X-API-Key`.
+La fonction Gradio `detecter` exige cette clé dans son paramètre API masqué.
+Aucun texte soumis n'est journalisé par l'application.
 
 ## Exécution locale
 
 ```bash
-docker build -t plagiat-fr-detecteur-ia .
-docker run --rm -p 7860:7860 \
-  -e PLAGIAT_FR_API_KEY=dev-secret \
-  plagiat-fr-detecteur-ia
+pip install -r requirements.txt
+PLAGIAT_FR_API_KEY=dev-secret python app.py
 ```
 
-## API
-
-```http
-POST /detecter
-Content-Type: application/json
-X-API-Key: ...
-
-{"texte": "Texte français à analyser..."}
-```
-
-La réponse contient une probabilité, un niveau, le nombre de segments et les
-raisons éventuelles d'abstention.
+Le service utilise ZeroGPU lorsqu'il est hébergé dans un Space compatible.

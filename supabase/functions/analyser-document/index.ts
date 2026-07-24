@@ -49,18 +49,40 @@ async function detecterRedactionIA(passages: Passage[]) {
   }
 
   try {
-    const reponse = await fetch(`${url.replace(/\/$/, "")}/detecter`, {
+    const racine = url.replace(/\/$/, "");
+    const lancement = await fetch(`${racine}/gradio_api/call/detecter`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-API-Key": cle,
       },
-      body: JSON.stringify({ texte }),
+      body: JSON.stringify({ data: [texte, cle] }),
       signal: AbortSignal.timeout(120_000),
     });
-    if (!reponse.ok) throw new Error(`Détecteur indisponible (${reponse.status})`);
+    if (!lancement.ok) {
+      throw new Error(`Détecteur indisponible (${lancement.status})`);
+    }
+    const evenement = await lancement.json();
+    if (typeof evenement.event_id !== "string") {
+      throw new Error("Réponse invalide du détecteur");
+    }
 
-    const resultat = await reponse.json();
+    const reponse = await fetch(
+      `${racine}/gradio_api/call/detecter/${evenement.event_id}`,
+      { signal: AbortSignal.timeout(120_000) },
+    );
+    if (!reponse.ok) {
+      throw new Error(`Détecteur indisponible (${reponse.status})`);
+    }
+    const flux = await reponse.text();
+    const ligne = flux
+      .split("\n")
+      .find((valeur) => valeur.startsWith("data: "));
+    if (!ligne) throw new Error("Résultat absent du détecteur");
+    const donnees = JSON.parse(ligne.slice(6));
+    const resultat = Array.isArray(donnees) ? donnees[0] : null;
+    if (!resultat || typeof resultat !== "object") {
+      throw new Error("Résultat invalide du détecteur");
+    }
     const score =
       typeof resultat.probabilite_ia === "number" &&
       resultat.probabilite_ia >= 0 &&

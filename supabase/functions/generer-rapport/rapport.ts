@@ -28,6 +28,8 @@ export type DonneesRapport = {
   scoreIA?: number | null;
   sources: SourceRapport[];
   passages: PassageRapport[];
+  typeMime?: string | null;
+  fichierOriginal?: Uint8Array | null;
 };
 
 type Polices = {
@@ -285,6 +287,37 @@ function decorerPage(
     size: 7.5,
     font: polices.gras,
     color: VERT,
+  });
+}
+
+function marquerPageOriginale(
+  page: PDFPage,
+  polices: Polices,
+  numeroPage: number,
+) {
+  const { width, height } = page.getSize();
+  dessinerDiamant(
+    page,
+    Math.max(12, width - 42),
+    Math.max(12, height - 42),
+    25,
+    0.18,
+  );
+  page.drawRectangle({
+    x: 0,
+    y: 0,
+    width,
+    height: 16,
+    color: rgb(1, 1, 1),
+    opacity: 0.72,
+  });
+  page.drawText(`Document original - page ${numeroPage}`, {
+      x: 10,
+      y: 5,
+      size: Math.min(6.5, Math.max(4.5, width / 95)),
+      font: polices.normal,
+      color: VERT,
+      opacity: 0.78,
   });
 }
 
@@ -713,6 +746,64 @@ export async function genererRapportPremium(donnees: DonneesRapport) {
       font: polices.normal,
       color: GRIS,
     });
+  }
+
+  if (
+    donnees.fichierOriginal?.length &&
+    donnees.typeMime === "application/pdf"
+  ) {
+    const separation = pdf.addPage([PAGE_LARGEUR, PAGE_HAUTEUR]);
+    numeroPage += 1;
+    decorerPage(separation, polices, numeroPage, donnees.analyseId);
+    dessinerDiamant(separation, 218, 455, 160, 0.24);
+    separation.drawText("Document original", {
+      x: MARGE,
+      y: 400,
+      size: 28,
+      font: polices.gras,
+      color: VERT,
+    });
+    separation.drawText("Reproduction fidele des pages soumises", {
+      x: MARGE,
+      y: 368,
+      size: 12,
+      font: polices.normal,
+      color: GRIS,
+    });
+    separation.drawText(
+      "Les images, tableaux, figures et la mise en page sont conserves.",
+      {
+        x: MARGE,
+        y: 345,
+        size: 9,
+        font: polices.normal,
+        color: GRIS,
+      },
+    );
+
+    const original = await PDFDocument.load(donnees.fichierOriginal, {
+      ignoreEncryption: true,
+    });
+    const pagesOriginales = await pdf.copyPages(
+      original,
+      original.getPageIndices(),
+    );
+    pagesOriginales.forEach((page, index) => {
+      pdf.addPage(page);
+      marquerPageOriginale(page, polices, index + 1);
+    });
+  } else if (donnees.fichierOriginal?.length) {
+    await pdf.attach(
+      donnees.fichierOriginal,
+      nettoyerTextePdf(donnees.nomFichier) || "document-original.docx",
+      {
+        mimeType:
+          donnees.typeMime ??
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        description: "Document original soumis a Plagiat-FR",
+        creationDate: new Date(),
+      },
+    );
   }
 
   return pdf.save();

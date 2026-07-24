@@ -70,14 +70,18 @@ Deno.serve(async (req) => {
     const { data: analyse, error } = await client
       .from("analyses")
       .select(
-        "id, utilisateur_id, nom_fichier, cree_le, score_originalite, score_ia, sources",
+        "id, utilisateur_id, nom_fichier, chemin_stockage, type_mime, cree_le, score_originalite, score_ia, sources",
       )
       .eq("id", analyse_id)
       .single();
 
     if (error || !analyse) throw new Error("Rapport inaccessible.");
 
-    const [{ data: profil }, { data: passages, error: erreurPassages }] =
+    const [
+      { data: profil },
+      { data: passages, error: erreurPassages },
+      { data: fichierOriginal, error: erreurFichier },
+    ] =
       await Promise.all([
         client
           .from("profils")
@@ -89,6 +93,7 @@ Deno.serve(async (req) => {
           .select("numero,contenu")
           .eq("analyse_id", analyse_id)
           .order("numero", { ascending: true }),
+        client.storage.from("documents").download(analyse.chemin_stockage),
       ]);
 
     if (erreurPassages || !passages?.length) {
@@ -96,6 +101,14 @@ Deno.serve(async (req) => {
         "Le texte intégral du document n’est pas disponible pour ce rapport.",
       );
     }
+    if (erreurFichier || !fichierOriginal) {
+      throw new Error(
+        "Le document original est inaccessible et ne peut pas etre integre au rapport.",
+      );
+    }
+    const octetsOriginaux = new Uint8Array(
+      await fichierOriginal.arrayBuffer(),
+    );
 
     let fuseau = "UTC";
     if (typeof fuseau_horaire === "string") {
@@ -131,6 +144,8 @@ Deno.serve(async (req) => {
         typeof analyse.score_ia === "number" ? analyse.score_ia : null,
       sources,
       passages: passages as PassageRapport[],
+      typeMime: analyse.type_mime,
+      fichierOriginal: octetsOriginaux,
     });
 
     return reponseJson(req, { pdf_base64: convertirBase64(octets) });

@@ -158,7 +158,10 @@ export function Rapport() {
       );
       const lien = document.createElement("a");
       lien.href = url;
-      lien.download = `rapport-${analyse?.nom_fichier || "analyse"}.pdf`;
+      const nomRapport = (analyse?.nom_fichier || "analyse")
+        .replace(/\.(pdf|docx)$/i, "")
+        .replace(/[<>:"/\\|?*]+/g, "-");
+      lien.download = `rapport-${nomRapport}.pdf`;
       lien.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {

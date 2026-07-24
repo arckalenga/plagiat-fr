@@ -252,14 +252,39 @@ export function Rapport() {
           note="Part du document ne présentant pas de similitude détectée dans la bibliothèque."
         />
         <Card className="p-6 shadow-none">
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <Bot size={20} />
-            Détection de rédaction IA
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Bot size={20} />
+              Détection de rédaction IA
+            </div>
+            <Badge>Expérimental</Badge>
           </div>
-          <p className="mt-5 text-2xl font-bold text-black/45">Non activée</p>
+          <p
+            className={`mt-5 text-3xl font-bold ${
+              analyse.score_ia === null ? "text-black/45" : "text-forest-800"
+            }`}
+          >
+            {analyse.score_ia === null
+              ? "Indéterminé"
+              : `${Math.round(analyse.score_ia)} %`}
+          </p>
+          {analyse.score_ia !== null && (
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/10">
+              <div
+                className="h-full rounded-full bg-amber-500"
+                style={{
+                  width: `${Math.min(100, Math.max(0, analyse.score_ia))}%`,
+                }}
+              />
+            </div>
+          )}
           <p className="mt-4 text-xs leading-5 text-black/45">
-            Aucun score IA n’est produit tant qu’un modèle francophone n’a pas
-            été entraîné et validé.
+            {analyse.resume_ia ??
+              "Aucun résultat de détection de rédaction IA n’est disponible."}
+          </p>
+          <p className="mt-2 text-xs font-medium leading-5 text-amber-800">
+            Cette estimation probabiliste ne constitue jamais une preuve et
+            doit faire l’objet d’une interprétation humaine.
           </p>
         </Card>
       </div>

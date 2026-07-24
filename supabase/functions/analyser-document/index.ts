@@ -6,6 +6,94 @@ const cors = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+type Passage = { contenu?: unknown };
+
+function selectionnerTexteIA(passages: Passage[]) {
+  const contenus = passages
+    .map((passage) =>
+      typeof passage?.contenu === "string" ? passage.contenu.trim() : "",
+    )
+    .filter(Boolean);
+  if (contenus.length <= 8) return contenus.join("\n\n").slice(0, 60_000);
+
+  const positions = new Set(
+    Array.from({ length: 8 }, (_, index) =>
+      Math.round((index * (contenus.length - 1)) / 7),
+    ),
+  );
+  return [...positions]
+    .sort((a, b) => a - b)
+    .map((index) => contenus[index])
+    .join("\n\n")
+    .slice(0, 60_000);
+}
+
+async function detecterRedactionIA(passages: Passage[]) {
+  const url = Deno.env.get("DETECTEUR_IA_URL");
+  const cle = Deno.env.get("DETECTEUR_IA_API_KEY");
+  if (!url || !cle) {
+    return {
+      score: null,
+      resume:
+        "Le détecteur IA expérimental n’est pas encore configuré sur ce projet.",
+    };
+  }
+
+  const texte = selectionnerTexteIA(passages);
+  if (texte.split(/\s+/).length < 120) {
+    return {
+      score: null,
+      resume:
+        "Texte trop court pour produire un indicateur IA expérimental.",
+    };
+  }
+
+  try {
+    const reponse = await fetch(`${url.replace(/\/$/, "")}/detecter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": cle,
+      },
+      body: JSON.stringify({ texte }),
+      signal: AbortSignal.timeout(120_000),
+    });
+    if (!reponse.ok) throw new Error(`Détecteur indisponible (${reponse.status})`);
+
+    const resultat = await reponse.json();
+    const score =
+      typeof resultat.probabilite_ia === "number" &&
+      resultat.probabilite_ia >= 0 &&
+      resultat.probabilite_ia <= 100
+        ? Math.round(resultat.probabilite_ia)
+        : null;
+    if (resultat.abstention || score === null) {
+      return {
+        score: null,
+        resume:
+          typeof resultat.raison === "string"
+            ? resultat.raison
+            : "Le détecteur IA expérimental s’est abstenu.",
+      };
+    }
+
+    const confiance =
+      typeof resultat.confiance === "number"
+        ? ` Confiance technique : ${Math.round(resultat.confiance)} %.`
+        : "";
+    return {
+      score,
+      resume: `Indicateur expérimental : probabilité de rédaction assistée par IA de ${score} %.${confiance} Ce résultat ne constitue pas une preuve.`,
+    };
+  } catch {
+    return {
+      score: null,
+      resume:
+        "Le détecteur IA expérimental est momentanément indisponible. L’analyse de plagiat reste valide.",
+    };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   let analyseId: string | null = null;
@@ -42,7 +130,26 @@ Deno.serve(async (req) => {
     });
     if (erreurComparaison) throw new Error(erreurComparaison.message);
 
-    return Response.json({ succes: true, resultat }, { headers: cors });
+    const resultatIA =
+      body.activer_detection_ia === true
+        ? await detecterRedactionIA(passages)
+        : {
+            score: null,
+            resume:
+              "La détection expérimentale de rédaction IA n’a pas été demandée.",
+          };
+    await admin
+      .from("analyses")
+      .update({
+        score_ia: resultatIA.score,
+        resume_ia: resultatIA.resume,
+      })
+      .eq("id", analyseId);
+
+    return Response.json(
+      { succes: true, resultat, detection_ia: resultatIA },
+      { headers: cors },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erreur interne";
     if (analyseId) await admin.from("analyses").update({ statut: "erreur", erreur: message }).eq("id", analyseId);

@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     const { data: analyse, error } = await client
       .from("analyses")
       .select(
-        "id, utilisateur_id, nom_fichier, cree_le, score_originalite, sources",
+        "id, utilisateur_id, nom_fichier, cree_le, score_originalite, score_ia, resume_ia, sources",
       )
       .eq("id", analyse_id)
       .single();
@@ -226,23 +226,42 @@ Deno.serve(async (req) => {
       color: vert,
     });
 
+    page.drawText("DETECTION DE REDACTION IA - EXPERIMENTAL", {
+      x: 42,
+      y: 490,
+      size: 9,
+      font: gras,
+      color: gris,
+    });
+    const resultatIA =
+      typeof analyse.score_ia === "number"
+        ? `${Math.round(analyse.score_ia)} % de probabilite estimee`
+        : "Resultat indetermine ou non demande";
+    page.drawText(resultatIA, {
+      x: 320,
+      y: 490,
+      size: 9,
+      font: gras,
+      color: vert,
+    });
+
     page.drawLine({
-      start: { x: 42, y: 485 },
-      end: { x: 553, y: 485 },
+      start: { x: 42, y: 468 },
+      end: { x: 553, y: 468 },
       thickness: 1,
       color: rgb(0.86, 0.86, 0.84),
     });
 
     page.drawText("REFERENCES SIMILAIRES DETECTEES", {
       x: 42,
-      y: 455,
+      y: 438,
       size: 11,
       font: gras,
       color: vert,
     });
 
     const sources = Array.isArray(analyse.sources) ? analyse.sources.slice(0, 5) : [];
-    let y = 425;
+    let y = 408;
     if (sources.length === 0) {
       page.drawText("Aucune similitude significative dans la bibliotheque interne.", {
         x: 42,
@@ -272,9 +291,13 @@ Deno.serve(async (req) => {
       "Comparaison limitee aux documents presents dans la bibliotheque Plagiat-FR.",
       { x: 42, y: 105, size: 9, font, color: gris },
     );
+    page.drawText(
+      "Le score IA est probabiliste, experimental et ne constitue jamais une preuve.",
+      { x: 42, y: 88, size: 8, font, color: gris },
+    );
     page.drawText(`Identifiant : ${analyse.id}`, {
       x: 42,
-      y: 70,
+      y: 64,
       size: 8,
       font,
       color: gris,

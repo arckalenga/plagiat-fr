@@ -162,10 +162,10 @@ begin
       select
         bp.document_id,
         bp.contenu as extrait,
-        similarity(bp.contenu_normalise,ap.contenu_normalise) as score
+        public.similarity(bp.contenu_normalise,ap.contenu_normalise) as score
       from public.bibliotheque_passages bp
-      where bp.contenu_normalise % ap.contenu_normalise
-      order by bp.contenu_normalise <-> ap.contenu_normalise
+      where bp.contenu_normalise operator(public.%) ap.contenu_normalise
+      order by bp.contenu_normalise operator(public.<->) ap.contenu_normalise
       limit 1
     ) m on true
     where ap.analyse_id=p_analyse_id
@@ -189,10 +189,10 @@ begin
       select
         bp.document_id,
         bp.contenu as extrait,
-        similarity(bp.contenu_normalise,ap.contenu_normalise) as score
+        public.similarity(bp.contenu_normalise,ap.contenu_normalise) as score
       from public.bibliotheque_passages bp
-      where bp.contenu_normalise % ap.contenu_normalise
-      order by bp.contenu_normalise <-> ap.contenu_normalise
+      where bp.contenu_normalise operator(public.%) ap.contenu_normalise
+      order by bp.contenu_normalise operator(public.<->) ap.contenu_normalise
       limit 1
     ) m on true
     where ap.analyse_id=p_analyse_id and m.score >= 0.35

@@ -1,5 +1,6 @@
 import hmac
 import os
+import traceback
 
 import gradio as gr
 import spaces
@@ -10,7 +11,12 @@ from detecteur import DetecteurIA, ModeleOculus
 detecteur: DetecteurIA | None = None
 
 
-@spaces.GPU(duration=120)
+@spaces.GPU(duration=1)
+def verifier_acceleration_zero() -> bool:
+    """Conserve la compatibilité du Space ZeroGPU sans y exécuter l'analyse."""
+    return True
+
+
 def detecter_texte(texte: str, cle_api: str) -> dict:
     global detecteur
     cle_attendue = os.getenv("PLAGIAT_FR_API_KEY", "")
@@ -18,9 +24,16 @@ def detecter_texte(texte: str, cle_api: str) -> dict:
         raise gr.Error("Le service n’est pas configuré.")
     if not hmac.compare_digest(cle_api or "", cle_attendue):
         raise gr.Error("Accès refusé.")
-    if detecteur is None:
-        detecteur = DetecteurIA(ModeleOculus())
-    return detecteur.analyser(texte).vers_dict()
+    try:
+        if detecteur is None:
+            detecteur = DetecteurIA(ModeleOculus())
+        return detecteur.analyser(texte).vers_dict()
+    except Exception as erreur:
+        print(traceback.format_exc(), flush=True)
+        return {
+            "erreur": type(erreur).__name__,
+            "detail": str(erreur)[:300],
+        }
 
 
 with gr.Blocks(title="Détecteur IA Plagiat-FR") as demo:
@@ -46,4 +59,4 @@ with gr.Blocks(title="Détecteur IA Plagiat-FR") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(ssr_mode=False)

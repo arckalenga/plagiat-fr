@@ -291,13 +291,9 @@ Deno.serve(async (req) => {
       "Comparaison limitee aux documents presents dans la bibliotheque Plagiat-FR.",
       { x: 42, y: 105, size: 9, font, color: gris },
     );
-    page.drawText(
-      "Le score IA est une estimation probabiliste a interpreter avec le document.",
-      { x: 42, y: 88, size: 8, font, color: gris },
-    );
     page.drawText(`Identifiant : ${analyse.id}`, {
       x: 42,
-      y: 64,
+      y: 76,
       size: 8,
       font,
       color: gris,

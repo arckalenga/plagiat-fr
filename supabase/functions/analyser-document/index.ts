@@ -119,6 +119,7 @@ async function detecterRedactionIA(passages: Passage[]) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   let analyseId: string | null = null;
+  let relanceIA = false;
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   try {
@@ -132,13 +133,42 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     analyseId = body.analyse_id;
-    const passages = body.passages;
-    if (!analyseId || !Array.isArray(passages) || passages.length === 0) {
-      throw new Error("Le document ne contient aucun passage exploitable");
-    }
+    relanceIA = body.relancer_detection_ia === true;
+    if (!analyseId) throw new Error("Identifiant d’analyse invalide");
 
     const { data: analyse } = await client.from("analyses").select("id").eq("id", analyseId).single();
     if (!analyse) throw new Error("Analyse introuvable");
+
+    if (relanceIA) {
+      const { data: passagesEnregistres, error: erreurPassages } = await client
+        .from("analyse_passages")
+        .select("contenu")
+        .eq("analyse_id", analyseId)
+        .order("numero", { ascending: true });
+      if (erreurPassages || !passagesEnregistres?.length) {
+        throw new Error("Aucun texte exploitable n’est disponible pour cette analyse");
+      }
+
+      const resultatIA = await detecterRedactionIA(passagesEnregistres);
+      await admin
+        .from("analyses")
+        .update({
+          score_ia: resultatIA.score,
+          resume_ia: resultatIA.resume,
+        })
+        .eq("id", analyseId);
+
+      return Response.json(
+        { succes: true, detection_ia: resultatIA },
+        { headers: cors },
+      );
+    }
+
+    const passages = body.passages;
+    if (!Array.isArray(passages) || passages.length === 0) {
+      throw new Error("Le document ne contient aucun passage exploitable");
+    }
+
     await admin.from("analyses").update({ statut: "traitement", erreur: null }).eq("id", analyseId);
 
     const { error: erreurIndexation } = await client.rpc("indexer_analyse_interne", {
@@ -174,7 +204,12 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erreur interne";
-    if (analyseId) await admin.from("analyses").update({ statut: "erreur", erreur: message }).eq("id", analyseId);
+    if (analyseId && !relanceIA) {
+      await admin
+        .from("analyses")
+        .update({ statut: "erreur", erreur: message })
+        .eq("id", analyseId);
+    }
     return Response.json({ erreur: message }, { status: 400, headers: cors });
   }
 });

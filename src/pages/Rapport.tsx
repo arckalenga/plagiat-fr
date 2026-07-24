@@ -46,6 +46,7 @@ export function Rapport() {
   const [erreur, setErreur] = useState("");
   const [erreurPdf, setErreurPdf] = useState("");
   const [telechargement, setTelechargement] = useState(false);
+  const [calculIA, setCalculIA] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -95,6 +96,41 @@ export function Rapport() {
       void supabase.removeChannel(canal);
     };
   }, [id]);
+
+  const calculerScoreIA = async () => {
+    if (!id || calculIA) return;
+    setCalculIA(true);
+    setErreur("");
+
+    const { data, error } = await supabase.functions.invoke(
+      "analyser-document",
+      {
+        body: {
+          analyse_id: id,
+          relancer_detection_ia: true,
+        },
+      },
+    );
+
+    if (error || !data?.detection_ia) {
+      setErreur(
+        "Le calcul du pourcentage IA n’a pas abouti. Réessayez dans quelques instants.",
+      );
+      setCalculIA(false);
+      return;
+    }
+
+    setAnalyse((courante) =>
+      courante
+        ? {
+            ...courante,
+            score_ia: data.detection_ia.score,
+            resume_ia: data.detection_ia.resume,
+          }
+        : courante,
+    );
+    setCalculIA(false);
+  };
 
   const telechargerPdf = async () => {
     if (!id || telechargement) return;
@@ -278,14 +314,19 @@ export function Rapport() {
               />
             </div>
           )}
-          <p className="mt-4 text-xs leading-5 text-black/45">
-            {analyse.resume_ia ??
-              "Aucun résultat de détection de rédaction IA n’est disponible."}
-          </p>
-          <p className="mt-2 text-xs font-medium leading-5 text-amber-800">
-            Cette estimation probabiliste doit faire l’objet d’une
-            interprétation humaine et être confrontée au contenu du document.
-          </p>
+          {analyse.score_ia === null ? (
+            <Button
+              className="mt-5 w-full"
+              disabled={calculIA}
+              onClick={() => void calculerScoreIA()}
+            >
+              {calculIA ? "Calcul en cours…" : "Calculer le pourcentage IA"}
+            </Button>
+          ) : (
+            <p className="mt-4 text-xs leading-5 text-black/45">
+              {analyse.resume_ia}
+            </p>
+          )}
         </Card>
       </div>
 

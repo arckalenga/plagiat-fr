@@ -23,7 +23,7 @@ export function NouvelleAnalyse() {
   const [erreur, setErreur] = useState("");
   const [chargement, setChargement] = useState(false);
   const [glisse, setGlisse] = useState(false);
-  const [detectionIA, setDetectionIA] = useState(false);
+  const [detectionIA, setDetectionIA] = useState(true);
 
   const choisir = (file?: File) => {
     setErreur("");

@@ -5,7 +5,7 @@ import traceback
 import gradio as gr
 import spaces
 
-from detecteur import DetecteurIA, ModeleOculus
+from detecteur import DetecteurIA, MODELE_HEURISTIQUE, ModeleHeuristiqueFrancais
 
 
 detecteur: DetecteurIA | None = None
@@ -26,7 +26,10 @@ def detecter_texte(texte: str, cle_api: str) -> dict:
         raise gr.Error("Accès refusé.")
     try:
         if detecteur is None:
-            detecteur = DetecteurIA(ModeleOculus())
+            detecteur = DetecteurIA(
+                ModeleHeuristiqueFrancais(),
+                identifiant_modele=MODELE_HEURISTIQUE,
+            )
         return detecteur.analyser(texte).vers_dict()
     except Exception as erreur:
         print(traceback.format_exc(), flush=True)

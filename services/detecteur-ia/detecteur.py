@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 MODELE_PAR_DEFAUT = "danibor/oculus-v2.0-multilingual"
+MODELE_HEURISTIQUE = "plagiat-fr/stylometrie-fr-v1"
 MOTS_MINIMUM = 120
 MOTS_PAR_SEGMENT = 300
 SEGMENTS_MAXIMUM = 8
@@ -126,6 +127,72 @@ class ModeleOculus:
         return [float(score) for score in scores]
 
 
+class ModeleHeuristiqueFrancais:
+    """Estimation stylométrique légère, déterministe et exécutable sur CPU."""
+
+    _connecteurs = {
+        "ainsi",
+        "cependant",
+        "donc",
+        "en outre",
+        "en effet",
+        "néanmoins",
+        "par ailleurs",
+        "par conséquent",
+        "toutefois",
+    }
+
+    @staticmethod
+    def _borner(valeur: float) -> float:
+        return max(0.0, min(1.0, valeur))
+
+    def probabilites(self, textes: list[str]) -> list[float]:
+        resultats: list[float] = []
+        for texte in textes:
+            mots = re.findall(r"[a-zà-ÿœ'-]+", texte.lower())
+            phrases = [
+                phrase.strip()
+                for phrase in re.split(r"[.!?]+", texte)
+                if phrase.strip()
+            ]
+            if not mots or not phrases:
+                resultats.append(0.5)
+                continue
+
+            diversite = len(set(mots)) / len(mots)
+            longueurs = [
+                len(re.findall(r"[a-zà-ÿœ'-]+", phrase.lower()))
+                for phrase in phrases
+            ]
+            moyenne = statistics.fmean(longueurs)
+            variation = (
+                statistics.pstdev(longueurs) / moyenne
+                if len(longueurs) > 1 and moyenne
+                else 0.0
+            )
+            ponctuations = len(set(re.findall(r"[,;:!?—()-]", texte)))
+            texte_minuscule = texte.lower()
+            densite_connecteurs = sum(
+                texte_minuscule.count(connecteur)
+                for connecteur in self._connecteurs
+            ) / max(1, len(mots) / 100)
+
+            regularite = 1 - self._borner(variation / 0.9)
+            faible_diversite = self._borner((0.62 - diversite) / 0.32)
+            pauvrete_ponctuation = 1 - self._borner(ponctuations / 7)
+            connecteurs_formels = self._borner(densite_connecteurs / 5)
+
+            score = (
+                0.12
+                + 0.34 * regularite
+                + 0.30 * faible_diversite
+                + 0.14 * pauvrete_ponctuation
+                + 0.10 * connecteurs_formels
+            )
+            resultats.append(self._borner(score))
+        return resultats
+
+
 class DetecteurIA:
     def __init__(
         self,
@@ -163,19 +230,13 @@ class DetecteurIA:
         dispersion = statistics.pstdev(scores) if len(scores) > 1 else 0.0
         distance = abs(score - 0.5) * 2
         confiance = round(max(0.0, min(1.0, distance * (1 - dispersion))) * 100)
-        abstention = 0.40 <= score <= 0.60 or confiance < 25
-
         return ResultatDetection(
-            probabilite_ia=None if abstention else round(score * 100),
-            niveau="indéterminée" if abstention else niveau_depuis_score(score),
+            probabilite_ia=round(score * 100),
+            niveau=niveau_depuis_score(score),
             confiance=confiance,
             segments_analyses=len(segments),
             mots_analyses=nombre_mots,
-            abstention=abstention,
-            raison=(
-                "Le score est trop proche de 50 % pour produire une indication."
-                if abstention
-                else None
-            ),
+            abstention=False,
+            raison=None,
             modele=self.identifiant_modele,
         )

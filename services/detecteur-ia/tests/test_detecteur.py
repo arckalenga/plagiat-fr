@@ -1,6 +1,6 @@
 import unittest
 
-from detecteur import DetecteurIA, decouper_texte
+from detecteur import DetecteurIA, ModeleHeuristiqueFrancais, decouper_texte
 
 
 class FauxModele:
@@ -26,10 +26,17 @@ class DetecteurIATest(unittest.TestCase):
         self.assertEqual(resultat.probabilite_ia, 92)
         self.assertEqual(resultat.niveau, "élevée")
 
-    def test_abstention_autour_de_cinquante_pourcent(self):
+    def test_retourne_un_pourcentage_autour_de_cinquante(self):
         resultat = DetecteurIA(FauxModele(0.52)).analyser(self.texte())
-        self.assertTrue(resultat.abstention)
-        self.assertEqual(resultat.niveau, "indéterminée")
+        self.assertFalse(resultat.abstention)
+        self.assertEqual(resultat.probabilite_ia, 52)
+
+    def test_modele_heuristique_retourne_des_scores_valides(self):
+        scores = ModeleHeuristiqueFrancais().probabilites(
+            [self.texte(), "Toutefois, cette analyse présente des variations."]
+        )
+        self.assertEqual(len(scores), 2)
+        self.assertTrue(all(0 <= score <= 1 for score in scores))
 
     def test_echantillonne_un_long_document(self):
         segments = decouper_texte(self.texte(5_000))

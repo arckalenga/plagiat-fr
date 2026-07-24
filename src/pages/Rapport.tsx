@@ -314,7 +314,7 @@ export function Rapport() {
               />
             </div>
           )}
-          {analyse.score_ia === null ? (
+          {analyse.score_ia === null && (
             <Button
               className="mt-5 w-full"
               disabled={calculIA}
@@ -322,10 +322,6 @@ export function Rapport() {
             >
               {calculIA ? "Calcul en cours…" : "Calculer le pourcentage IA"}
             </Button>
-          ) : (
-            <p className="mt-4 text-xs leading-5 text-black/45">
-              {analyse.resume_ia}
-            </p>
           )}
         </Card>
       </div>

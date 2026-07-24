@@ -91,18 +91,43 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: token } } },
     );
 
-    const { analyse_id } = await req.json();
+    const { analyse_id, fuseau_horaire } = await req.json();
     if (typeof analyse_id !== "string") {
       throw new Error("Identifiant d’analyse invalide.");
     }
 
     const { data: analyse, error } = await client
       .from("analyses")
-      .select("id, nom_fichier, cree_le, score_originalite, sources")
+      .select(
+        "id, utilisateur_id, nom_fichier, cree_le, score_originalite, sources",
+      )
       .eq("id", analyse_id)
       .single();
 
     if (error || !analyse) throw new Error("Rapport inaccessible.");
+
+    const { data: profil } = await client
+      .from("profils")
+      .select("nom_complet,email")
+      .eq("id", analyse.utilisateur_id)
+      .single();
+
+    let fuseau = "UTC";
+    if (typeof fuseau_horaire === "string") {
+      try {
+        new Intl.DateTimeFormat("fr-FR", { timeZone: fuseau_horaire }).format();
+        fuseau = fuseau_horaire;
+      } catch {
+        fuseau = "UTC";
+      }
+    }
+    const dateSoumission = new Intl.DateTimeFormat("fr-FR", {
+      dateStyle: "long",
+      timeStyle: "short",
+      timeZone: fuseau,
+    }).format(new Date(analyse.cree_le));
+    const originalite = analyse.score_originalite ?? 0;
+    const plagiat = 100 - originalite;
 
     const pdf = await PDFDocument.create();
     const page = pdf.addPage([595, 842]);
@@ -119,7 +144,7 @@ Deno.serve(async (req) => {
       font: gras,
       color: rgb(1, 1, 1),
     });
-    page.drawText("Rapport de similarite interne", {
+    page.drawText("Rapport de plagiat et de similarite", {
       x: 42,
       y: 768,
       size: 11,
@@ -130,53 +155,94 @@ Deno.serve(async (req) => {
     const titre = couperTexte(analyse.nom_fichier, gras, 18, 511).slice(0, 2);
     dessinerLignes(page, titre, 42, 700, gras, 18, vert);
 
-    page.drawText("INDICE D'ORIGINALITE INTERNE", {
+    page.drawText("DOCUMENT SOUMIS PAR", {
       x: 42,
-      y: 620,
+      y: 650,
       size: 10,
       font: gras,
       color: gris,
     });
-    page.drawText(`${analyse.score_originalite ?? "-"} %`, {
+    page.drawText(profil?.nom_complet ?? "Utilisateur", {
       x: 42,
-      y: 568,
-      size: 42,
+      y: 630,
+      size: 12,
+      font: gras,
+      color: vert,
+    });
+    if (profil?.email) {
+      page.drawText(profil.email, {
+        x: 42,
+        y: 614,
+        size: 9,
+        font,
+        color: gris,
+      });
+    }
+
+    page.drawText("DATE ET HEURE DE SOUMISSION", {
+      x: 320,
+      y: 650,
+      size: 10,
+      font: gras,
+      color: gris,
+    });
+    dessinerLignes(
+      page,
+      couperTexte(dateSoumission, gras, 11, 233).slice(0, 2),
+      320,
+      630,
+      gras,
+      11,
+      vert,
+    );
+
+    page.drawText("TAUX DE PLAGIAT DETECTE", {
+      x: 42,
+      y: 565,
+      size: 10,
+      font: gras,
+      color: gris,
+    });
+    page.drawText(`${plagiat} %`, {
+      x: 42,
+      y: 520,
+      size: 36,
+      font: gras,
+      color: rgb(0.72, 0.08, 0.08),
+    });
+
+    page.drawText("INDICE D'ORIGINALITE INTERNE", {
+      x: 320,
+      y: 565,
+      size: 10,
+      font: gras,
+      color: gris,
+    });
+    page.drawText(`${originalite} %`, {
+      x: 320,
+      y: 520,
+      size: 36,
       font: gras,
       color: vert,
     });
 
-    page.drawText("DETECTION DE REDACTION IA", {
-      x: 320,
-      y: 620,
-      size: 10,
-      font: gras,
-      color: gris,
-    });
-    page.drawText("Non activee", {
-      x: 320,
-      y: 578,
-      size: 22,
-      font: gras,
-      color: gris,
-    });
-
     page.drawLine({
-      start: { x: 42, y: 530 },
-      end: { x: 553, y: 530 },
+      start: { x: 42, y: 485 },
+      end: { x: 553, y: 485 },
       thickness: 1,
       color: rgb(0.86, 0.86, 0.84),
     });
 
     page.drawText("REFERENCES SIMILAIRES DETECTEES", {
       x: 42,
-      y: 500,
+      y: 455,
       size: 11,
       font: gras,
       color: vert,
     });
 
     const sources = Array.isArray(analyse.sources) ? analyse.sources.slice(0, 5) : [];
-    let y = 470;
+    let y = 425;
     if (sources.length === 0) {
       page.drawText("Aucune similitude significative dans la bibliotheque interne.", {
         x: 42,
